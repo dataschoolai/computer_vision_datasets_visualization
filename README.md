@@ -10,5 +10,5 @@ pip install fiftyone
 ## Custom formats
 Run command
 ```bash
-python --path DATA/CONCRETE_DATASET_JSON
+python custom_format.py --path DATA/CONCRETE_DATASET_JSON
 ```
