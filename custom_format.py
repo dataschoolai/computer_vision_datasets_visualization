@@ -8,7 +8,7 @@ import argparse
 
 
 #Define the function create custom dataset format
-def get_sample_data(file_path):
+def get_sample_data(file_path,pred=False):
 
     data_path =Path(file_path)
     #Create samples list for the dataset
@@ -37,6 +37,8 @@ def get_sample_data(file_path):
             # [top-left-x, top-left-y, width, height]
             #Read bounding box from annotation
             bbox = ann['bbox']
+            #Get confidence from annotation
+            confidence = ann['score']
             #Normalize bounding box
             x1 = bbox[0]/width
             y1 = bbox[1]/height
@@ -44,12 +46,15 @@ def get_sample_data(file_path):
             h = bbox[3]/height
         
             #Create detection object
-            detection = fo.Detection(label=label,bounding_box=[x1,y1,w,h])
+            detection = fo.Detection(label=label,bounding_box=[x1,y1,w,h],confidence=confidence)
             #Append detection to detections list
             detections.append(detection)
 
         #Assign detections to sample
-        sample['ground_truth'] = fo.Detections(detections=detections)
+        if pred:
+            sample['predictions'] = fo.Detections(detections=detections)
+        else:
+            sample['ground_truth'] = fo.Detections(detections=detections)
 
         #append sample to samples list
         samples.append(sample)
@@ -60,6 +65,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Create custom dataset format')
     parser.add_argument('--path', type=str, required=True,
                         help='Path to the dataset')
+    #Get predictions flag default value is False
+    parser.add_argument('--pred', type=bool, default=False,
+                        help='Flag to get predictions')
     return parser.parse_args()
 
 
@@ -84,7 +92,7 @@ def app(samples):
 #Run the main function
 if __name__ == '__main__':
     args = parse_args()
-    samples = get_sample_data(args.path)
+    samples = get_sample_data(args.path,pred=args.pred)
     #Create custom dataset format
     # fo.Dataset(samples=samples).save('custom_format.json')
     app(samples)
