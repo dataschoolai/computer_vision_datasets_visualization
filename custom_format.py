@@ -38,7 +38,7 @@ def get_sample_data(file_path,pred=False):
             #Read bounding box from annotation
             bbox = ann['bbox']
             #Get confidence from annotation
-            confidence = ann['score']
+            confidence = ann.get('score',False)
             #Normalize bounding box
             x1 = bbox[0]/width
             y1 = bbox[1]/height
@@ -46,7 +46,10 @@ def get_sample_data(file_path,pred=False):
             h = bbox[3]/height
         
             #Create detection object
-            detection = fo.Detection(label=label,bounding_box=[x1,y1,w,h],confidence=confidence)
+            if confidence:
+                detection = fo.Detection(label=label,bounding_box=[x1,y1,w,h],confidence=confidence)
+            else:
+                detection = fo.Detection(label=label,bounding_box=[x1,y1,w,h])
             #Append detection to detections list
             detections.append(detection)
 
