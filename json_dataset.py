@@ -43,41 +43,45 @@ def get_detection_data(annotations:dict,pred=False):
 
 #Define the function create custom dataset format
 def get_sample_data(images_path:Path,labels_path:list):
-    label_path = Path(labels_path[0]['path_labels'])/'labels'
-    pred = labels_path[0]['pred']
+    # label_path = Path(labels_path[0]['path_labels'])/'labels'
+    # pred = labels_path[0]['pred']
     #Create samples list for the dataset
     samples = []
     for path in images_path.glob('*.jpg'):
         #Read labels from file than assign to annotations
-        label =(label_path / path.stem )
-        #Add extension to label
-        label = label.with_suffix('.json')
-        #Check if file is not exists
-        
-
-        if not label.exists():
-            continue
-        
-        f = open(label).read()
-        annotations = json.loads(f)
-        
-        # Create sample object
-        sample = fo.Sample(path.stem)
-
-
-        #Create a sample from the file path
+        # sample = fo.Sample(path.stem)
         sample = fo.Sample(filepath=path)
-        #Loop through labels
+        for label_path in labels_path:
+            label =Path(label_path['path_labels'])/'labels' / path.stem 
 
-        #Convert detecyions to FiftyOne format
-        detections = get_detection_data(annotations,pred)
-        #Assign detections to sample
-        if pred:
-            sample['predictions'] = fo.Detections(detections=detections)
-        else:
-            sample['ground_truth'] = fo.Detections(detections=detections)
+            pred = label_path['pred']
+            #Add extension to label
+            label = label.with_suffix('.json')
+            #Check if file is not exists
+            
 
-        #append sample to samples list
+            if not label.exists():
+                continue
+            
+            f = open(label).read()
+            annotations = json.loads(f)
+            
+            # Create sample object
+
+
+            #Create a sample from the file path
+            # sample = fo.Sample(filepath=path)
+            #Loop through labels
+
+            #Convert detecyions to FiftyOne format
+            detections = get_detection_data(annotations,pred)
+            #Assign detections to sample
+            if pred:
+                sample['predictions'] = fo.Detections(detections=detections)
+            else:
+                sample['ground_truth'] = fo.Detections(detections=detections)
+
+            #append sample to samples list
         samples.append(sample)
     return samples
 
