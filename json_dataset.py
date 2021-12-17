@@ -9,8 +9,11 @@ import argparse
 
 
 #Define the function create custom dataset format
-def get_sample_data(labels_path:Path,images_path:Path,pred=False):
+def get_sample_data(data_path:dict,pred=False):
 
+    images_path = Path(data_path[1]['path_labels'])/'images'
+    labels_path = Path(data_path[1]['path_labels'])/'labels'
+    print(data_path)
     #Create samples list for the dataset
     samples = []
     for path in images_path.glob('*.jpg'):
@@ -79,19 +82,8 @@ def app(data_path:dict):
     #Create dataset object
     dataset = fo.Dataset('Custom-data')
     #Define the images path
-    images_path = Path(data_path[1]['path_labels'])/'images'
-    #add samples to dataset
-    #Loop through the data path
-    for item in data_path:
-        #Check if pred is predictions or ground truth
-        
-        if item['type']=='predictions':
-            #Define the labels path
-            labels_path = Path(item['path_labels'])/'labels'
-            dataset.add_samples(get_sample_data(labels_path,images_path,pred=True))
-        else:
-            dataset.add_samples(get_sample_data(labels_path,images_path,pred=False))
-     
+    dataset.add_samples(get_sample_data(data_path))
+
 
     #Launch the session 
     session = fo.launch_app()
