@@ -9,14 +9,22 @@ import argparse
 
 
 #Define the function create custom dataset format
-def get_sample_data(file_path,pred=False):
+def get_sample_data(labels_path:Path,images_path:Path,pred=False):
 
-    data_path =Path(file_path)
     #Create samples list for the dataset
     samples = []
-    for path in data_path.glob('labels/*.json'):
+    for path in images_path.glob('*.jpg'):
         #Read labels from file than assign to annotations
-        f = open(path).read()
+        label =(labels_path / path.stem )
+        #Add extension to label
+        label = label.with_suffix('.json')
+        #Check if file is not exists
+        
+
+        if not label.exists():
+            continue
+        
+        f = open(label).read()
         annotations = json.loads(f)
         
         # Create sample object
@@ -24,7 +32,7 @@ def get_sample_data(file_path,pred=False):
 
 
         #Create a sample from the file path
-        sample = fo.Sample(filepath=data_path/'images'/(path.stem+'.jpg'))
+        sample = fo.Sample(filepath=path)
         #Convert detecyions to FiftyOne format
         detections = []
         #read from annotations image width and height
@@ -70,16 +78,20 @@ def app(data_path:dict):
     # path='DATA/CONCRETE_DATASET_JSON'
     #Create dataset object
     dataset = fo.Dataset('Custom-data')
+    #Define the images path
+    images_path = Path(data_path[1]['path_labels'])/'images'
     #add samples to dataset
     #Loop through the data path
-    for item in data:
+    for item in data_path:
         #Check if pred is predictions or ground truth
         
         if item['type']=='predictions':
-            dataset.add_samples(get_sample_data(item['path_labels'],True))
+            #Define the labels path
+            labels_path = Path(item['path_labels'])/'labels'
+            dataset.add_samples(get_sample_data(labels_path,images_path,pred=True))
         else:
-            dataset.add_samples(get_sample_data(item['path_labels'],False))
-
+            dataset.add_samples(get_sample_data(labels_path,images_path,pred=False))
+     
 
     #Launch the session 
     session = fo.launch_app()
